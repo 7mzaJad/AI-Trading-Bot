@@ -1,0 +1,21 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs
+*.log
+launchd.err
+launchd.out
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Mac
+.DS_Store

@@ -1,0 +1,19 @@
+AI Trading Bot - Future Enhancements & Expansion Possibilities
+
+1. Dynamic Stock Screener
+Instead of a hardcoded list of stocks, we can write a script that wakes up at 9:00 AM, scans the entire stock market for the top 10 most active/trending stocks of the day, and feeds only those to the AI.
+
+2. Discord/Telegram Notifications
+We can add a webhook so that every time the bot places a trade, it sends a push notification directly to your phone explaining what it bought, the confidence level, and the reasoning.
+
+3. Alternative Data Sources
+We can expand the data fetcher to scrape Reddit (WallStreetBets), Twitter/X sentiment, or read live Federal Reserve interest rate announcements to give the AI an informational edge over standard technical indicators.
+
+4. Backtesting Engine
+We can build a separate script that runs our exact AI strategy against historical market data to mathematically prove the win rate and how much money it would have made before risking real capital.
+
+5. Advanced Portfolio Rebalancing
+Currently, the bot buys stocks independently. We could add a portfolio manager that ensures no single sector (e.g., Tech vs. Gold) dominates the portfolio, automatically selling winners to rebalance the account.
+
+6. Live Trading
+Once we are completely confident in the paper trading results over a few weeks, we can simply flip the ALPACA_PAPER flag to 'False' in the .env file to allow the bot to execute trades with real money.
