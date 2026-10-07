@@ -107,11 +107,7 @@ class MT5DataFetcher:
         """
         Implementation of the document's 'Strategy 1: VWAP Microstructure & EMA Trend Filter'
         """
-        # Session Filter: Strictly 12:00 to 17:00 UTC
-        utc_now = datetime.now(timezone.utc)
-        if not (12 <= utc_now.hour < 17):
-            return {"signal": "HOLD", "sl": 0.0, "tp": 0.0}
-
+        
         price = technicals['current_price']
         low = technicals['low']
         high = technicals['high']

@@ -141,10 +141,7 @@ class OandaDataFetcher:
 
     def check_algorithmic_entry(self, technicals: Dict[str, Any]) -> Dict[str, Any]:
         """Pure Python mathematical rules for entry. Requires Trend Pullback."""
-        utc_now = datetime.now(timezone.utc)
-        if not (12 <= utc_now.hour < 17):
-            return {"signal": "HOLD", "sl": 0.0, "tp": 0.0}
-
+        
         price = technicals['current_price']
         low = technicals['low']
         high = technicals['high']
