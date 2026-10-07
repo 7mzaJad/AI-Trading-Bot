@@ -16,6 +16,16 @@ class Config:
 
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     
+    # MetaTrader 5 Credentials
+    MT5_LOGIN = os.getenv("MT5_LOGIN", "")
+    MT5_PASSWORD = os.getenv("MT5_PASSWORD", "")
+    MT5_SERVER = os.getenv("MT5_SERVER", "")
+    
+    # OANDA Credentials
+    OANDA_API_KEY = os.getenv("OANDA_API_KEY", "")
+    OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "")
+    OANDA_ENVIRONMENT = os.getenv("OANDA_ENVIRONMENT", "practice")
+    
     # Advanced Risk Management
     MAX_RISK_PERCENT = float(os.getenv("RISK_TOLERANCE_PERCENT", "0.02")) # Max 2% of portfolio risked per trade
     MIN_POSITION_SIZE_USD = 100.0

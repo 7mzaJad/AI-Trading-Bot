@@ -19,3 +19,6 @@ __pycache__/
 
 # Mac
 .DS_Store
+
+mt5_service_log.txt
+oanda_service_log.txt

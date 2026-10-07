@@ -18,7 +18,7 @@ class AIEngine:
     def __init__(self):
         Config.validate()
         self.client = genai.Client(api_key=Config.GEMINI_API_KEY)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-3.8-flash"
 
     def evaluate_stock(self, ticker: str, news: List[Dict[str, str]], technicals: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"AI evaluating {ticker}...")
@@ -65,3 +65,42 @@ Rules:
         except Exception as e:
             logger.error(f"Error evaluating {ticker} via AI: {e}")
             return {"decision": "HOLD"}
+
+    def evaluate_xauusd_macro(self, algo_signal: str, macro: Dict[str, Any]) -> str:
+        logger.info(f"AI evaluating Macro context for algorithmic {algo_signal} signal...")
+        
+        macro_text = json.dumps(macro, indent=2)
+
+        prompt = f"""
+You are an elite Macro Economist. 
+My algorithmic technical rules have just triggered a '{algo_signal}' on Gold (XAUUSD).
+I need you to look at the US Dollar (DXY) and US 10-Year Treasury Yields (^TNX) and tell me if they support this trade.
+
+Macro Factors (Gravity):
+{macro_text}
+
+RULES:
+1. If DXY and Yields are both RISING, gold is under severe bearish pressure. A BUY should be REJECTED. A SELL should be APPROVED.
+2. If DXY and Yields are both FALLING, gold has bullish tailwinds. A BUY should be APPROVED. A SELL should be REJECTED.
+3. If they are mixed (NEUTRAL), default to APPROVED (let the technicals play out).
+
+Respond with exactly one word: APPROVED or REJECTED. Do not add punctuation or explanation.
+"""
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="text/plain",
+                ),
+            )
+            
+            result = response.text.strip().upper()
+            if "APPROVED" in result:
+                return "APPROVED"
+            return "REJECTED"
+        except Exception as e:
+            logger.error(f"Error evaluating Macro via AI: {e}")
+            # Fail safe: if AI is down, reject the trade to protect capital
+            return "REJECTED"
+
