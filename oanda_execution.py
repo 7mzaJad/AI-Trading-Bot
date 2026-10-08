@@ -59,6 +59,12 @@ class OandaExecutionManager:
             return 0
             
         units = int(risk_amount / price_diff)
+        
+        # Margin Protection: Gold usually requires 5% margin. Don't exceed what the account can hold.
+        max_margin_units = int(equity / (current_price * 0.05))
+        if units > max_margin_units:
+            units = max_margin_units
+            
         if units == 0 and risk_amount > 0:
             units = 1
         return units
