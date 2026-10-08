@@ -26,6 +26,15 @@ class ExecutionManager:
         clock = self.client.get_clock()
         return clock.is_open
 
+    def time_until_open(self) -> float:
+        clock = self.client.get_clock()
+        if clock.is_open:
+            return 0.0
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        time_to_open = (clock.next_open - now).total_seconds()
+        return max(0.0, time_to_open)
+
     def get_positions(self):
         positions = self.client.get_all_positions()
         return {p.symbol: float(p.qty) for p in positions}

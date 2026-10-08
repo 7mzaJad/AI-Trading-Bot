@@ -70,8 +70,11 @@ def main():
                 logger.info("Sleeping for 60 minutes...")
                 time.sleep(60 * 60)
             else:
-                logger.info("Market is CLOSED. Sleeping for 15 minutes...")
-                time.sleep(15 * 60)
+                seconds_to_open = execution_manager.time_until_open()
+                hours = int(seconds_to_open // 3600)
+                minutes = int((seconds_to_open % 3600) // 60)
+                logger.info(f"Market is CLOSED. Sleeping for {hours}h {minutes}m until exactly the next open...")
+                time.sleep(seconds_to_open + 5) # add 5s buffer to ensure it's fully open
         except Exception as e:
             logger.error(f"CRITICAL ERROR in main loop (likely internet dropout): {e}")
             logger.info("Sleeping for 60 seconds before retrying...")
