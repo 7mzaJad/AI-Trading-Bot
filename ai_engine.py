@@ -18,13 +18,11 @@ class AIEngine:
     def __init__(self):
         Config.validate()
         self.client = genai.Client(api_key=Config.GEMINI_API_KEY)
-        self.model_name = "gemini-3.8-flash"
+        self.model_name = "gemini-1.5-flash"
 
     def evaluate_stock(self, ticker: str, news: List[Dict[str, str]], technicals: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"AI evaluating {ticker}...")
         
-        if not news:
-            return {"decision": "HOLD", "reason": "No news available."}
 
         news_text = "\n".join([f"- {item['title']}" for item in news])
         tech_text = json.dumps(technicals, indent=2)
