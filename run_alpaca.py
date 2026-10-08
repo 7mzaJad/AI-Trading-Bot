@@ -62,8 +62,8 @@ def main():
         logger.error(f"Configuration Error: {e}")
         return
 
-    target_tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GLD", "GOLD"]
-    logger.info(f"Monitoring Tickers: {', '.join(target_tickers)}")
+    logger.info("Monitoring the entire US Stock Market via AI Search...")
+
     
     while True:
         try:
