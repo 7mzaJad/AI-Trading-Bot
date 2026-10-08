@@ -14,11 +14,15 @@ class TradeDecision(BaseModel):
     stop_loss_price: float = Field(description="Calculated stop loss price if BUY. 0.0 if HOLD/SELL.")
     take_profit_price: float = Field(description="Calculated take profit price if BUY. 0.0 if HOLD/SELL.")
 
+class MarketScannerDecision(BaseModel):
+    chain_of_thought: str = Field(description="Summary of today's market news and reasoning.")
+    ticker: str = Field(description="The single best stock ticker symbol to buy right now. Must be a valid US stock ticker. Output 'NONE' if no solid trade is found.")
+    confidence: int = Field(description="Confidence level between 0 and 100.")
 class AIEngine:
     def __init__(self):
         Config.validate()
         self.client = genai.Client(api_key=Config.GEMINI_API_KEY)
-        self.model_name = "gemini-1.5-flash"
+        self.model_name = "gemini-3.8-flash"
 
     def evaluate_stock(self, ticker: str, news: List[Dict[str, str]], technicals: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"AI evaluating {ticker}...")
@@ -106,3 +110,33 @@ Respond with exactly one word: APPROVED or REJECTED. Do not add punctuation or e
             # Fail safe: if AI is down for other reasons, reject to protect capital
             return "REJECTED"
 
+
+    def scan_market_for_best_stock(self) -> Dict[str, Any]:
+        logger.info("AI is scanning the entire market (with Google Search) for the best guaranteed stock...")
+        
+        prompt = """
+        Hello good morning! What is the latest news or what should I buy today of stocks? 
+        I want solid trades on the stock market that are guaranteed only, not just anything.
+        Search the live internet for the best stock to buy today.
+        Return the ticker symbol of the best stock to buy right now.
+        If there are no guaranteed/solid setups today, return 'NONE' for the ticker.
+        """
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    tools=[{"google_search": {}}],
+                    response_mime_type="application/json",
+                    response_schema=MarketScannerDecision,
+                ),
+            )
+            
+            result = json.loads(response.text)
+            logger.info(f"AI Market Scan Result: {result.get('ticker')} | Conf: {result.get('confidence')}")
+            logger.info(f"Reasoning: {result.get('chain_of_thought')}")
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error scanning market via AI: {e}")
+            return {"ticker": "NONE"}

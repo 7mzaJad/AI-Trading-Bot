@@ -5,7 +5,7 @@ from ai_engine import AIEngine
 from execution import ExecutionManager
 from config import Config, setup_logging
 
-def run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger, target_tickers):
+def run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger):
     try:
         account_status = execution_manager.get_account_status()
         logger.info(f"Current Equity: ${account_status['equity']:.2f} | Buying Power: ${account_status['buying_power']:.2f}")
@@ -13,35 +13,40 @@ def run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger, target
         logger.error(f"Failed to connect to Alpaca: {e}")
         return
 
-    # Fetch Macro Market Context
-    market_context = data_fetcher.get_market_context()
-    logger.info(f"SPY Status: {market_context.get('status')}")
-
-    for ticker in target_tickers:
-        logger.info(f"--- Analyzing {ticker} ---")
+    # 1. Ask AI to scan the entire market
+    scan_result = ai_engine.scan_market_for_best_stock()
+    ticker = scan_result.get("ticker", "NONE").upper()
+    confidence = scan_result.get("confidence", 0)
+    
+    if ticker == "NONE" or not ticker or confidence < 90:
+        logger.info(f"AI did not find a guaranteed solid trade today (Confidence: {confidence}). Skipping.")
+        return
         
-        # 1. Fetch News
-        news = data_fetcher.get_stock_news(ticker)
+    logger.info(f"--- AI Recommended: {ticker} ---")
+    
+    # 2. Fetch Technicals for the AI's chosen ticker
+    technicals = data_fetcher.get_technical_indicators(ticker)
+    if not technicals:
+        logger.warning(f"Could not fetch technical data for {ticker}. Skipping.")
+        return
         
-        # 2. Fetch Technicals
-        technicals = data_fetcher.get_technical_indicators(ticker)
-        if not technicals:
-            logger.warning(f"Could not fetch sufficient technical data for {ticker}. Skipping.")
-            continue
-            
-        current_price = technicals.get("current_price")
-        logger.info(f"{ticker} Current Price: ${current_price:.2f}")
-        
-        # 3. AI Evaluation
-        evaluation = ai_engine.evaluate_stock(ticker, news, technicals, market_context)
-        
-        # 4. Execute Trade
-        execution_manager.execute_trade(ticker, evaluation, current_price)
-        
-        # Free Tier Rate Limit Handling
-        logger.info("Sleeping for 5 seconds to respect Gemini API free tier limits...")
-        time.sleep(5)
-
+    current_price = technicals.get("current_price")
+    logger.info(f"{ticker} Current Price: ${current_price:.2f}")
+    
+    # 3. Calculate SL and TP based on volatility
+    atr = technicals.get("daily_volatility_percent", 2.0)
+    if atr is None: atr = 2.0
+    sl_price = current_price * (1 - (atr/100))
+    tp_price = current_price * (1 + ((atr*2)/100))
+    
+    evaluation = {
+        "decision": "BUY",
+        "stop_loss_price": sl_price,
+        "take_profit_price": tp_price
+    }
+    
+    # 4. Execute Trade
+    execution_manager.execute_trade(ticker, evaluation, current_price)
     logger.info("Trading cycle complete. Waiting for next cycle...")
 
 def main():
@@ -64,7 +69,7 @@ def main():
         try:
             if execution_manager.is_market_open():
                 logger.info("Market is OPEN. Starting trading cycle.")
-                run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger, target_tickers)
+                run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger)
                 
                 # Sleep for 1 hour before analyzing again
                 logger.info("Sleeping for 60 minutes...")
