@@ -66,7 +66,10 @@ class OandaDataFetcher:
         response = requests.get(url, headers=self.headers, params=params)
         
         if response.status_code != 200:
-            logger.error(f"OANDA API Error: {response.text}")
+            if response.status_code in [500, 502, 503, 504]:
+                logger.error(f"OANDA API is down or in maintenance (Status {response.status_code}).")
+            else:
+                logger.error(f"OANDA API Error: {response.text[:200]}")
             return pd.DataFrame()
             
         data = response.json().get('candles', [])

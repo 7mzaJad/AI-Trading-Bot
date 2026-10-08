@@ -101,6 +101,10 @@ Respond with exactly one word: APPROVED or REJECTED. Do not add punctuation or e
             return "REJECTED"
         except Exception as e:
             logger.error(f"Error evaluating Macro via AI: {e}")
-            # Fail safe: if AI is down, reject the trade to protect capital
+            error_str = str(e)
+            if "429" in error_str or "Quota" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                logger.warning("Gemini AI Rate Limit Exhausted! Bypassing Macro Filter and trusting mathematical algorithm -> APPROVED.")
+                return "APPROVED"
+            # Fail safe: if AI is down for other reasons, reject to protect capital
             return "REJECTED"
 
