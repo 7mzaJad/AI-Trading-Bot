@@ -61,16 +61,21 @@ def main():
     logger.info(f"Monitoring Tickers: {', '.join(target_tickers)}")
     
     while True:
-        if execution_manager.is_market_open():
-            logger.info("Market is OPEN. Starting trading cycle.")
-            run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger, target_tickers)
-            
-            # Sleep for 1 hour before analyzing again
-            logger.info("Sleeping for 60 minutes...")
-            time.sleep(60 * 60)
-        else:
-            logger.info("Market is CLOSED. Sleeping for 15 minutes...")
-            time.sleep(15 * 60)
+        try:
+            if execution_manager.is_market_open():
+                logger.info("Market is OPEN. Starting trading cycle.")
+                run_trading_cycle(data_fetcher, ai_engine, execution_manager, logger, target_tickers)
+                
+                # Sleep for 1 hour before analyzing again
+                logger.info("Sleeping for 60 minutes...")
+                time.sleep(60 * 60)
+            else:
+                logger.info("Market is CLOSED. Sleeping for 15 minutes...")
+                time.sleep(15 * 60)
+        except Exception as e:
+            logger.error(f"CRITICAL ERROR in main loop (likely internet dropout): {e}")
+            logger.info("Sleeping for 60 seconds before retrying...")
+            time.sleep(60)
 
 if __name__ == "__main__":
     main()
