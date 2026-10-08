@@ -42,13 +42,9 @@ def main():
                 
                 # 3. If Math Triggers, get Macro & AI Approval
                 if signal in ["BUY", "SELL"]:
-                    logger.info(f"Algorithmic Math Signal: {signal}. Checking Macro & AI...")
+                    logger.info(f"Algorithmic Math Signal: {signal}. Bypassing AI (Pure Math Execution)...")
                     
-                    # Fetch macro only when needed
-                    macro = data_fetcher.get_macro_context()
-                    
-                    ai_approval = ai_engine.evaluate_xauusd_macro(signal, macro)
-                    logger.info(f"AI Macro Filter Result: {ai_approval}")
+                    ai_approval = "APPROVED"
                     
                     if ai_approval == "APPROVED":
                         trade_payload = {

@@ -58,6 +58,8 @@ class OandaExecutionManager:
             return 0
             
         units = int(risk_amount / price_diff)
+        if units == 0 and risk_amount > 0:
+            units = 1
         return units
 
     def execute_trade(self, symbol: str, evaluation: dict, current_price: float):
