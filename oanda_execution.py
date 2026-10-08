@@ -48,10 +48,11 @@ class OandaExecutionManager:
 
     def calculate_units(self, symbol: str, sl_price: float, current_price: float, equity: float) -> int:
         """
-        Calculates OANDA units to risk exactly MAX_RISK_PERCENT of account equity.
+        Calculates OANDA units to risk 100% of account equity.
         For XAU_USD, 1 unit = 1 ounce.
         """
-        risk_amount = equity * Config.MAX_RISK_PERCENT
+        # User requested to use the whole balance (100% risk)
+        risk_amount = equity * 1.0 
         price_diff = abs(current_price - sl_price)
         
         if price_diff <= 0:
